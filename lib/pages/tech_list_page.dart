@@ -9,7 +9,7 @@ class TechListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Inventario Tecnología")),
+      appBar: AppBar(title: Text("Inventario Tecnología — César Centurión 7A")),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
@@ -33,7 +33,9 @@ class TechListPage extends StatelessWidget {
                 subtitle: Text(item.modelo),
                 trailing: IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => service.delete(item.id!),
+                  onPressed: () {
+                    _confirmDelete(context, item.id!);
+                  },
                 ),
                 onTap: () {
                   Navigator.push(
@@ -50,4 +52,40 @@ class TechListPage extends StatelessWidget {
       ),
     );
   }
+
+  void _confirmDelete(BuildContext context, String id) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          "Confirmación",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text("¿Estás seguro de que deseas eliminar este registro?"),
+        actions: [
+          TextButton(
+            child: const Text("Cancelar"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Eliminar"),
+            onPressed: () async {
+              await TecnologiaService().delete(id);
+              Navigator.of(context).pop(); // cerrar el popup
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 }
