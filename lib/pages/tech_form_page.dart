@@ -5,38 +5,98 @@ import '../services/tecnologia_service.dart';
 class TechFormPage extends StatefulWidget {
   final Tecnologia? item;
 
-  TechFormPage({this.item});
+  const TechFormPage({super.key, this.item});
 
   @override
-  _TechFormPageState createState() => _TechFormPageState();
+  State<TechFormPage> createState() => _TechFormPageState();
 }
 
 class _TechFormPageState extends State<TechFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final service = TecnologiaService();
+  final TecnologiaService service = TecnologiaService();
 
-  late TextEditingController tipoCtrl;
-  late TextEditingController marcaCtrl;
-  late TextEditingController modeloCtrl;
-  late TextEditingController serieCtrl;
-  late TextEditingController estadoCtrl;
+  late TextEditingController tipo;
+  late TextEditingController marca;
+  late TextEditingController modelo;
+  late TextEditingController estado;
+  late TextEditingController serie;
+
+  late String fechaIngreso; // AUTOMÁTICA
 
   @override
   void initState() {
     super.initState();
+    final item = widget.item;
 
-    tipoCtrl = TextEditingController(text: widget.item?.tipo ?? "");
-    marcaCtrl = TextEditingController(text: widget.item?.marca ?? "");
-    modeloCtrl = TextEditingController(text: widget.item?.modelo ?? "");
-    serieCtrl = TextEditingController(text: widget.item?.serie ?? "");
-    estadoCtrl = TextEditingController(text: widget.item?.estado ?? "");
+    tipo = TextEditingController(text: item?.tipo ?? "");
+    marca = TextEditingController(text: item?.marca ?? "");
+    modelo = TextEditingController(text: item?.modelo ?? "");
+    estado = TextEditingController(text: item?.estado ?? "");
+    serie = TextEditingController(text: item?.serie ?? "");
+
+    // FECHA AUTOMÁTICA
+    fechaIngreso = item?.fechaIngreso ?? DateTime.now().toIso8601String();
+  }
+
+  Future<void> guardar() async {
+    if (_formKey.currentState!.validate()) {
+      final t = Tecnologia(
+        id: widget.item?.id,
+        tipo: tipo.text,
+        marca: marca.text,
+        modelo: modelo.text,
+        estado: estado.text,
+        serie: serie.text,
+        fechaIngreso: fechaIngreso, // AUTOMÁTICA
+      );
+
+      if (widget.item == null) {
+        await service.create(t);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registro creado")),
+        );
+      } else {
+        await service.update(t);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registro actualizado")),
+        );
+      }
+
+      Navigator.pop(context);
+    }
+  }
+
+  Widget campo(String texto, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: texto,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        validator: (v) =>
+            v == null || v.isEmpty ? "Este campo es obligatorio" : null,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final azulUisrael = const Color(0xFF004DA8);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.item == null ? "Nuevo Equipo" : "Editar Equipo"),
+        backgroundColor: azulUisrael,
+        title: Text(
+          widget.item == null
+              ? "Nuevo Registro"
+              : "Editar Registro",
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -44,48 +104,32 @@ class _TechFormPageState extends State<TechFormPage> {
           key: _formKey,
           child: ListView(
             children: [
-              campo("Tipo", tipoCtrl),
-              campo("Marca", marcaCtrl),
-              campo("Modelo", modeloCtrl),
-              campo("Serie", serieCtrl),
-              campo("Estado", estadoCtrl),
-              SizedBox(height: 20),
+              campo("Tipo", tipo),
+              campo("Marca", marca),
+              campo("Modelo", modelo),
+              campo("Estado", estado),
+              campo("Serie", serie),
+
+              const SizedBox(height: 20),
+
               ElevatedButton(
-                child: Text("Guardar"),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    final item = Tecnologia(
-                      id: widget.item?.id,
-                      tipo: tipoCtrl.text,
-                      marca: marcaCtrl.text,
-                      modelo: modeloCtrl.text,
-                      serie: serieCtrl.text,
-                      estado: estadoCtrl.text,
-                      fechaIngreso: DateTime.now(),
-                    );
-
-                    if (widget.item == null) {
-                      service.create(item);
-                    } else {
-                      service.update(item);
-                    }
-
-                    Navigator.pop(context);
-                  }
-                },
-              ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: azulUisrael,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                onPressed: guardar,
+                child: const Text(
+                  "Guardar",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              )
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget campo(String label, TextEditingController ctrl) {
-    return TextFormField(
-      controller: ctrl,
-      decoration: InputDecoration(labelText: label),
-      validator: (v) => v!.isEmpty ? "Campo requerido" : null,
     );
   }
 }

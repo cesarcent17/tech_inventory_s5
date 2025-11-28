@@ -1,25 +1,38 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/tecnologia.dart';
 
 class TecnologiaService {
-  final CollectionReference _col =
-      FirebaseFirestore.instance.collection('tecnologia');
+  final String baseUrl =
+      "https://uisrael-ccenturion-default-rtdb.firebaseio.com/tecnologia";
 
-  // CREATE
-  Future<void> create(Tecnologia item) =>
-      _col.add(item.toMap());
-
-  // READ (stream)
-  Stream<List<Tecnologia>> getAll() {
-    return _col.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => Tecnologia.fromMap(doc.id, doc.data() as Map<String, dynamic>))
-        .toList());
+  Future<void> create(Tecnologia item) async {
+    final url = Uri.parse("$baseUrl.json");
+    await http.post(url, body: jsonEncode(item.toMap()));
   }
 
-  // UPDATE
-  Future<void> update(Tecnologia item) =>
-      _col.doc(item.id).update(item.toMap());
+  Future<List<Tecnologia>> getAll() async {
+    final url = Uri.parse("$baseUrl.json");
+    final response = await http.get(url);
 
-  // DELETE
-  Future<void> delete(String id) => _col.doc(id).delete();
+    if (response.body == "null") return [];
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+
+    return data.entries.map((e) {
+      final id = e.key;
+      final map = Map<String, dynamic>.from(e.value);
+      return Tecnologia.fromMap(id, map);
+    }).toList();
+  }
+
+  Future<void> update(Tecnologia item) async {
+    final url = Uri.parse("$baseUrl/${item.id}.json");
+    await http.patch(url, body: jsonEncode(item.toMap()));
+  }
+
+  Future<void> delete(String id) async {
+    final url = Uri.parse("$baseUrl/$id.json");
+    await http.delete(url);
+  }
 }
