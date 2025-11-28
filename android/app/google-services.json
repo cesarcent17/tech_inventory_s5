@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "777818057595",
+    "project_id": "uisrael-ccenturion",
+    "storage_bucket": "uisrael-ccenturion.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777818057595:android:a7e1ca4640837a9691abde",
+        "android_client_info": {
+          "package_name": "com.example.tech_inventory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZk0kFeBAXt_Brk71S4OmL6dGQ0K6-1UI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
